@@ -20,9 +20,9 @@ fprintf("Alínea a): %f\n", prob)
 
 
 %% b)
-N = 1e5;    % Número de experiências
-n = [10 50 100 500 1000];     % Número de keys
-m = 1000;   % Número de casos possíveis
+N = 1e5;                    % Número de experiências
+n = [10 50 100 500 1000];   % Número de keys
+m = 1000;                   % Número de casos possíveis
 
 probabilidades = zeros(1, length(n));
 
@@ -42,4 +42,22 @@ stem(n, probabilidades)
 
 
 %% c)
-% To be continued
+N = 1e5;            % Número de experiências
+n = 50;             % Número de keys
+m = 100:100:1000;   % Número de entradas
+
+probabilidades = zeros(1, length(n));
+
+for i = 1:length(m)
+    experiencias = randi(m(i), n, N) - 1;
+    as = true(1, N);
+
+    for j = 1:N
+        aux = experiencias(:, j);
+        as(j) = length(unique(aux)) ~= n; % Probabilidade de ter duas ou mais keys iguais
+    end
+
+    probabilidades(i) = sum(as)/N;
+end
+
+stem(m, probabilidades)

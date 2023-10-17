@@ -8,7 +8,7 @@ lambda = 15;
 %% a)
 k = 0;
 prob = lambda^k / factorial(k) * exp(-lambda);
-fprintf("a) = %f\n", prob);
+fprintf("a) = %e\n", prob);
 
 
 %% b)
