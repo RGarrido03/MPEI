@@ -2,7 +2,7 @@ clear
 close all
 clc
 
-fprintf("Exercício 4.2.1\n\n")
+fprintf("Exercício 4.2\n\n")
 
 
 %% Initial
@@ -106,19 +106,5 @@ for i = 1:k
         out = false;
         return;
     end
-end
-end
-
-function aux= muxDJB31MA(chave, seed, k)
-len= length(chave);
-chave= double(chave);
-h= seed;
-aux = zeros(1, k);
-for i=1:len
-    h = mod(31 * h + chave(i), 2^32 -1) ;
-end
-for i = 1:k
-    h = mod(31 * h + i, 2^32 -1) ;
-    aux(i) = h;
 end
 end
