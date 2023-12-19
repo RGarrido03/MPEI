@@ -36,13 +36,9 @@ end
 year_bloom = bloomFilterInitialization(1000);
 
 for i = 1:x
-    year_bloom = bloomFilterInsert(year_bloom, movies{i, 2}, 4);
-end
-
-for i = 1:x
     for j = 3:y
         if ~ismissing(movies{i, j})
-            key = strcat(movies{i,j}, ",", string(movies{i,2}));
+            key = convertStringsToChars(strcat(movies{i,j}, ",", string(movies{i,2})));
             year_bloom = bloomFilterInsert(year_bloom, key, 4);
         end
     end
@@ -58,8 +54,7 @@ function bloom = bloomFilterInsert(bloom, key, k)
 m = length(bloom);
 aux = muxDJB31MA(key, 127, k);
 for i = 1:k
-    key = [key num2str(i)];
-    hash = mod(aux(i), m) + 1
+    hash = mod(aux(i), m) + 1;
     bloom(hash) = bloom(hash) + 1;
 end
 end

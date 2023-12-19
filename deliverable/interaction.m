@@ -24,10 +24,10 @@ while true
             a = strsplit(a, ',');
             genre = a{1};
             year = a{2};
+            key = convertStringsToChars(strcat(genre, ",", year));
 
-            count_genre = bloomFilterCheck(genre_bloom, genre, 4);
-            count_year = bloomFilterCheck(year_bloom, year, 4);
-            fprintf("%d movies with genre %s\n", count_genre, genre);
+            count_year = bloomFilterCheck(year_bloom, key, 4);
+            fprintf("%d movies released in %s with genre %s\n", count_year, year, genre);
         
         case 6
             break;
