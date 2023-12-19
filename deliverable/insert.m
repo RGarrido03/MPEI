@@ -5,6 +5,7 @@ clc
 %% Read
 movies = readcell('movies.csv', 'Delimiter', ',');
 
+
 %% Get genres
 genres = {};
 [x, y] = size(movies);
@@ -21,6 +22,7 @@ end
 
 genres = genres(1:length(genres) - 1);
 
+
 %% Genres bloom
 genre_bloom = bloomFilterInitialization(1000);
 
@@ -32,7 +34,8 @@ for i = 1:x
     end
 end
 
-%% Years bloom
+
+%% Genres + Years bloom
 year_bloom = bloomFilterInitialization(1000);
 
 for i = 1:x
