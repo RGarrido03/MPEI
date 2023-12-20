@@ -51,6 +51,7 @@ end
 [Set_title, Nm] = createMovieTitleStructure(movies);
 signatures_genre = getSignatures(Set_genre, Nm, 100);
 signatures_title = getSignatures(Set_title, Nm, 100);
+%%similarTitles = createMovieSimilarities(Set_title, Nm, signatures_title);
 
 
 %% Hash function
@@ -105,12 +106,16 @@ function [Set, Nm] = createMovieTitleStructure(movies)
 Nm = length(movies);
 Set = cell(Nm,1);
 
-for n = 1:Nm % Lines (movies)
-    title = movies{n,1};
-    for i = 1:length(title)-1
-        Set{n} = [Set{n} convertCharsToStrings(title(i:i+1))];
+    for n = 1:Nm % Lines (movies)
+        title = movies{n, 1};
+        letters = strings(1, length(title));
+
+        for i = 1:length(title)
+            letters(i) = title(i);
+        end
+
+        Set{n} = strjoin(letters, "");
     end
-end
 end
 
 
@@ -127,7 +132,7 @@ for n = 1:Nm
 end
 end
 
-function similarTitles = createMovieSimilarities(Nm, set_title)
+function SimilarTitles = createMovieSimilarities(Set_title, Nm, signatures_title)
     J = zeros(Nm);
     k = 100;
     for n1= 1:Nm
@@ -140,9 +145,9 @@ function similarTitles = createMovieSimilarities(Nm, set_title)
     % Array para guardar títulos similares (título1, título2, similaridade)
     SimilarTitles= zeros(1,3);
     k= 1;
-    for n1= 1:Nt
-        for n2= n1+1:Nt
-            SimilarTitles(k,:) = [set_title(1) set_title(2) 1-J(n1,n2)];
+    for n1= 1:Nm
+        for n2= n1+1:Nm
+            SimilarTitles(k,:) = [Set_title(1) Set_title(2) 1-J(n1,n2)];
             k= k+1;
         end
     end

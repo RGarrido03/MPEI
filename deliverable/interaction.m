@@ -35,10 +35,16 @@ while true
 
         case 4
             a = input("Insert a string: ", "s");
-
+            [topSimilarities, topTitles] = fiveSimilarMovies(a, signatures_title, Set_title);
+            fprintf("Top 5 Similar Titles:\n");
+            for i = 1:5
+                fprintf("%s - %f\n", topTitles{i}, topSimilarities(i));
+            end
 
         case 5
-            a = input("Select one or more genres (separated by ','): ");
+            a = input("Select one or more genres (separated by ','): ", "s");
+
+            
 
         case 6
             break;
