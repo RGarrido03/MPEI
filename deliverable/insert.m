@@ -20,8 +20,6 @@ for i = 1:x
     end
 end
 
-genres = genres(1:length(genres) - 1);
-
 
 %% Genres bloom
 genre_bloom = bloomFilterInitialization(1000);
@@ -48,7 +46,28 @@ for i = 1:x
 end
 
 
-%% Functions
+%% Signatures
+[Set, Nu] = createStructure(movies);
+signatures = getSignatures(Set, Nu, 100);
+
+
+%% Hash function
+function aux = muxDJB31MA(chave, seed, k)
+len = length(chave);
+chave = double(chave);
+h = seed;
+aux = zeros(1, k);
+for i=1:len
+    h = mod(31 * h + chave(i), 2^32 -1) ;
+end
+for i = 1:k
+    h = mod(31 * h + i, 2^32 -1) ;
+    aux(i) = h;
+end
+end
+
+
+%% Bloom functions
 function bloom = bloomFilterInitialization(n)
 bloom = zeros(1, n);
 end
@@ -62,16 +81,32 @@ for i = 1:k
 end
 end
 
-function aux = muxDJB31MA(chave, seed, k)
-len = length(chave);
-chave = double(chave);
-h = seed;
-aux = zeros(1, k);
-for i=1:len
-    h = mod(31 * h + chave(i), 2^32 -1) ;
+
+%% MinHash functions
+function [Set, Nm] = createStructure(movies)
+% For each movie, get its genres
+Nm = length(movies);
+Set = cell(Nm,1);
+
+for n = 1:Nm % Lines (movies)
+    for g = 3:12 % Columns (genres)
+        if ~ismissing(movies{n, g})
+            Set{n} = [Set{n} convertCharsToStrings(movies{n,g})];
+        end
+    end
 end
-for i = 1:k
-    h = mod(31 * h + i, 2^32 -1) ;
-    aux(i) = h;
+end
+
+
+function signatures = getSignatures(Set, Nm, K)
+signatures = inf(Nm, K);
+
+for n = 1:Nm
+    set_n = Set{n};
+    for i = 1:length(set_n)
+        key = num2str(set_n(i));
+        h_out = muxDJB31MA(key, 127, K);
+        signatures(n,:) = min(h_out, signatures(n,:));
+    end
 end
 end
