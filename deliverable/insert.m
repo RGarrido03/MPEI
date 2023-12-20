@@ -22,12 +22,15 @@ end
 
 
 %% Genres bloom
-genre_bloom = bloomFilterInitialization(1000);
+n = length(genres);
+m = ceil(-n*log(0.001)/(log(2))^2);
+k = round((m/n)*log(2));
+genre_bloom = bloomFilterInitialization(m);
 
 for i = 1:x
     for j = 3:y
         if ~ismissing(movies{i, j})
-            genre_bloom = bloomFilterInsert(genre_bloom, movies{i, j}, 4);
+            genre_bloom = bloomFilterInsert(genre_bloom, movies{i, j}, k);
         end
     end
 end
@@ -72,16 +75,16 @@ end
 
 %% Bloom functions
 function bloom = bloomFilterInitialization(n)
-bloom = zeros(1, n);
+    bloom = zeros(1, n, 'uint16');
 end
 
 function bloom = bloomFilterInsert(bloom, key, k)
-m = length(bloom);
-aux = muxDJB31MA(key, 127, k);
-for i = 1:k
-    hash = mod(aux(i), m) + 1;
-    bloom(hash) = bloom(hash) + 1;
-end
+    m = length(bloom);
+    aux = muxDJB31MA(key, 127, k);
+    for i = 1:k
+        hash = mod(aux(i), m) + 1;
+        bloom(hash) = bloom(hash) + 1;
+    end
 end
 
 

@@ -15,8 +15,8 @@ while true
             end
         
         case 2
-            genre = input("Select a genre: ", 's');
-            count = bloomFilterCheck(genre_bloom, genre, 4);
+            genre = convertStringsToChars(input("Select a genre: ", 's'));
+            count = bloomFilterCheck(genre_bloom, genre, k);
             if count == 0
                 fprintf("Genre not found!")
             else
@@ -24,6 +24,8 @@ while true
             end
         
         case 3
+            % não está a dar os resultados bem - Drama,1904 -> 1  -
+            % Comedy,1901 -> 3
             a = input("Select a genre and a year (separated by ','): ", 's');
             a = strsplit(a, ',');
             genre = a{1};
@@ -38,7 +40,7 @@ while true
             [topSimilarities, topTitles] = fiveSimilarMovies(a, signatures_title, Set_title);
             fprintf("Top 5 Similar Titles:\n");
             for i = 1:5
-                fprintf("%s - %f\n", topTitles{i}, topSimilarities(i));
+                fprintf("\t%s - %f\n", topTitles{i}, topSimilarities(i));
             end
 
         case 5
@@ -56,22 +58,20 @@ while true
 end
 
 function count = bloomFilterCheck(bloom, key, k)
-m = length(bloom);
-aux = muxDJB31MA(key, 127, k);
-count = [];
-for i = 1:k
-    key = [key num2str(i)];
-    hash = mod(aux(i), m) + 1;
-    if bloom(hash) > 0
+    m = length(bloom);
+    aux = muxDJB31MA(key, 127, k);
+    count = [];
+    for i = 1:k
+        key = [key num2str(i)];
+        hash = mod(aux(i), m) + 1;
         count = [count bloom(hash)];
     end
-end
-
-if ~isempty(count)
-    count = min(count);
-else
-    count = 0;
-end
+    
+    if ~isempty(count)
+        count = min(count);
+    else
+        count = 0;
+    end
 
 end
 
