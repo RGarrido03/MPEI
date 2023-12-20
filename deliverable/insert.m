@@ -47,8 +47,10 @@ end
 
 
 %% Signatures
-[Set, Nu] = createStructure(movies);
-signatures = getSignatures(Set, Nu, 100);
+[Set_genre, ~] = createMovieGenreStructure(movies);
+[Set_title, Nm] = createMovieTitleStructure(movies);
+signatures_genre = getSignatures(Set_genre, Nm, 100);
+signatures_title = getSignatures(Set_title, Nm, 100);
 
 
 %% Hash function
@@ -83,7 +85,7 @@ end
 
 
 %% MinHash functions
-function [Set, Nm] = createStructure(movies)
+function [Set, Nm] = createMovieGenreStructure(movies)
 % For each movie, get its genres
 Nm = length(movies);
 Set = cell(Nm,1);
@@ -93,6 +95,20 @@ for n = 1:Nm % Lines (movies)
         if ~ismissing(movies{n, g})
             Set{n} = [Set{n} convertCharsToStrings(movies{n,g})];
         end
+    end
+end
+end
+
+
+function [Set, Nm] = createMovieTitleStructure(movies)
+% For each movie, get its title split in shingles.
+Nm = length(movies);
+Set = cell(Nm,1);
+
+for n = 1:Nm % Lines (movies)
+    title = movies{n,1};
+    for i = 1:length(title)-1
+        Set{n} = [Set{n} convertCharsToStrings(title(i:i+1))];
     end
 end
 end
