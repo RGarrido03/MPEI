@@ -17,7 +17,11 @@ while true
         case 2
             genre = input("Select a genre: ", 's');
             count = bloomFilterCheck(genre_bloom, genre, 4);
-            fprintf("%d movies with genre %s\n", count, genre);
+            if count == 0
+                fprintf("Genre not found!")
+            else
+                fprintf("%d movies with genre %s\n", count, genre);
+            end
         
         case 3
             a = input("Select a genre and a year (separated by ','): ", 's');
@@ -28,9 +32,20 @@ while true
 
             count_year = bloomFilterCheck(year_bloom, key, 4);
             fprintf("%d movies released in %s with genre %s\n", count_year, year, genre);
-        
+
+        case 4
+            a = input("Insert a string: ", "s");
+
+
+        case 5
+            a = input("Select one or more genres (separated by ','): ");
+
         case 6
             break;
+
+        otherwise
+            fprintf("INVALID OPTION!\n")
+
     end
 end
 
@@ -45,7 +60,13 @@ for i = 1:k
         count = [count bloom(hash)];
     end
 end
-count = min(count);
+
+if ~isempty(count)
+    count = min(count);
+else
+    count = 0;
+end
+
 end
 
 function aux = muxDJB31MA(chave, seed, k)

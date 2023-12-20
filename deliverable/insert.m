@@ -126,3 +126,28 @@ for n = 1:Nm
     end
 end
 end
+
+function similarTitles = createMovieSimilarities(Nm, set_title)
+    J = zeros(Nm);
+    k = 100;
+    for n1= 1:Nm
+        for n2= n1+1:Nm
+            J(n1, n2) = sum(signatures_title(n1,:) ~= signatures_title(n2,:))/k;
+        end
+    end
+    
+    
+    % Array para guardar títulos similares (título1, título2, similaridade)
+    SimilarTitles= zeros(1,3);
+    k= 1;
+    for n1= 1:Nt
+        for n2= n1+1:Nt
+            SimilarTitles(k,:) = [set_title(1) set_title(2) 1-J(n1,n2)];
+            k= k+1;
+        end
+    end
+
+    if ~all(SimilarTitles(:) == 0)
+        SimilarTitles = sortrows(SimilarTitles, 3);
+    end
+end
