@@ -52,15 +52,28 @@ Foi-nos fornecido um ficheiro CSV (\textit{Comma-Separated Values}), \verb|movie
 Quanto à estrutura, na primeira coluna está presente o título, na segunda o ano e nas restantes os vários géneros associados ao filme.
 
 \pagebreak
-\section{Section 1}
-\subsection{Subsection 2}
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Platea dictumst quisque sagittis purus sit amet volutpat. Dictum sit amet justo donec enim diam. Quam viverra orci sagittis eu volutpat odio facilisis mauris sit. Consectetur lorem donec massa sapien. Auctor augue mauris augue neque gravida in fermentum et. Vel pretium lectus quam id leo in vitae turpis massa. Orci sagittis eu volutpat odio facilisis. Semper auctor neque vitae tempus quam pellentesque nec nam. Donec massa sapien faucibus et molestie ac feugiat sed. Massa tincidunt nunc pulvinar sapien et ligula. Faucibus nisl tincidunt eget nullam non. Sed turpis tincidunt id aliquet risus feugiat in.
+\section{Desenvolvimento}
+\subsection{Hash function}
+Recorremos à função \verb|muxDJB31MA| para efetuar o \textit{hashing} em todas as ocasiões onde este é necessário.
 
-Arcu non sodales neque sodales ut. Fermentum iaculis eu non diam phasellus vestibulum lorem sed. Condimentum mattis pellentesque id nibh tortor. Sem integer vitae justo eget magna fermentum iaculis eu. Sit amet volutpat consequat mauris nunc congue nisi. Nascetur ridiculus mus mauris vitae. Id eu nisl nunc mi ipsum faucibus. Sed egestas egestas fringilla phasellus faucibus scelerisque. Integer eget aliquet nibh praesent tristique. In massa tempor nec feugiat nisl. Tortor vitae purus faucibus ornare suspendisse sed nisi lacus sed. Scelerisque purus semper eget duis at. Justo nec ultrices dui sapien eget mi proin sed libero. Et ultrices neque ornare aenean euismod elementum nisi quis.
+Esta é uma modificação da função \verb|DJB31MA| utilizada nas aulas, onde é usado um argumento \verb|k| correspondente ao número de funções de \textit{hash}. Isto permite reduzir a complexidade computacional, já que deixa de ser necessário invocar a função e percorrer a string para cada função de \textit{hash}.
 
-Ornare quam viverra orci sagittis eu volutpat odio. Quam quisque id diam vel. Semper auctor neque vitae tempus quam pellentesque nec. Sed ullamcorper morbi tincidunt ornare massa eget egestas purus. Rhoncus aenean vel elit scelerisque mauris pellentesque pulvinar pellentesque. Et ultrices neque ornare aenean euismod elementum nisi. Lectus vestibulum mattis ullamcorper velit sed ullamcorper morbi. Scelerisque eu ultrices vitae auctor eu augue ut lectus. Habitasse platea dictumst vestibulum rhoncus est pellentesque elit. Sit amet consectetur adipiscing elit pellentesque habitant morbi tristique. Lacus sed viverra tellus in hac habitasse platea dictumst vestibulum. Duis tristique sollicitudin nibh sit. Eros donec ac odio tempor orci dapibus ultrices. Id semper risus in hendrerit. Massa enim nec dui nunc. Quis risus sed vulputate odio ut enim blandit volutpat maecenas. Ultrices dui sapien eget mi proin sed libero enim sed. Adipiscing at in tellus integer. Ut tortor pretium viverra suspendisse potenti nullam ac tortor vitae. Neque egestas congue quisque egestas diam in arcu.
+\begin{lstlisting}[style=Matlab-editor]
+function aux = muxDJB31MA(chave, seed, k)
+len = length(chave);
+chave = double(chave);
+h = seed;
+aux = zeros(1, k);
+for i=1:len
+    h = mod(31 * h + chave(i), 2^32 -1) ;
+end
+for i = 1:k
+    h = mod(31 * h + i, 2^32 -1) ;
+    aux(i) = h;
+end
+end
+\end{lstlisting}
 
-Metus vulputate eu scelerisque felis. Sed libero enim sed faucibus turpis. Amet consectetur adipiscing elit ut. Interdum posuere lorem ipsum dolor sit. Netus et malesuada fames ac turpis egestas maecenas. In iaculis nunc sed augue. Elit duis tristique sollicitudin nibh. Tincidunt lobortis feugiat vivamus at augue eget arcu dictum varius. Id neque aliquam vestibulum morbi blandit cursus risus. Ut sem viverra aliquet eget sit amet tellus cras adipiscing. Facilisi cras fermentum odio eu feugiat. Hendrerit gravida rutrum quisque non tellus orci ac.
 
 \begin{lstlisting}[style=Matlab-editor]
 %% Sample Matlab code
