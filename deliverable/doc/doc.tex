@@ -74,6 +74,23 @@ end
 end
 \end{lstlisting}
 
+\subsection{Opção 1}
+Filtrámos, através de um ciclo \verb|for|, os demais géneros, de modo a obter um vetor de géneros únicos, ignorando os elementos do \textit{cell array} que estão \textit{missing}.
+
+\begin{lstlisting}[style=Matlab-editor]
+genres = {};
+[x, y] = size(movies);
+
+for i = 1:x
+    for j = 3:y
+        if ~ismissing(movies{i, j})
+            if ~ismember(convertCharsToStrings(movies{i, j}), genres)
+                genres = [genres convertCharsToStrings(movies{i, j})];
+            end
+        end
+    end
+end
+\end{lstlisting}
 
 \begin{lstlisting}[style=Matlab-editor]
 %% Sample Matlab code
