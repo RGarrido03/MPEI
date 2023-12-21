@@ -94,7 +94,7 @@ end
 \end{lstlisting}
 
 \subsection{Opção 2}
-\subsubsection{Criação do filtro de Bloom}
+\subsubsection{Criação do filtro de Bloom} \label{2_creation}
 Para inicializar um filtro de bloom, recorre-se a um vetor com o tamanho passo como argumento da função \verb|bloomFilterInitialization|.
 
 Recorremos à formula \(\frac{-n\times log(n)}{log(2)^2}\) para obter o tamanho adequado do filtro, onde \(n\) é a probabilidade de falsos positivos desejada. Escolhemos \(n\) como \(0.001\) porque consideramos ser um equilibro entre uma percentagem baixa de erro e o consumo de memória do filtro.
@@ -176,6 +176,81 @@ Select a genre:
   Comedy
 
 16124 movies with genre Comedy
+\end{lstlisting}
+
+\subsection{Opção 3}
+\subsubsection{Criação do filtro de Bloom}
+Para a criação do filtro, recorreu-se à mesma estratégia da opção 4 (ver secção \ref{2_creation}).
+
+\subsubsection{Inserção de elementos}
+Para a inserção dos pares (Género, Ano) no bloom, recorreu-se à mesma função da secção \ref{2_insert}, a \verb|bloomFilterInsert|.
+
+No entanto, uma vez que esta função aceita apenas strings, houve a necessidade de concatenar o par. Assim, para cada par, unimos ambos os valores numa string de formato "GéneroAno", e inserimos num vetor \verb|genres_years|.
+
+\begin{lstlisting}[style=Matlab-editor]
+totalElements = x * (y - 2);
+genres_years = strings(1, totalElements);
+count = 1;
+
+for i = 1:x
+    for j = 3:y
+        if ~ismissing(movies{i, j})
+            genre_year = strcat(movies{i, j}, string(movies{i, 2}));
+            genres_years(count) = genre_year;
+            count = count + 1;
+        end
+    end
+end
+
+genres_years = genres_years(1:count-1);
+
+n_gy = length(unique(genres_years));
+m_gy = ceil(-n_gy*log(0.0001)/(log(2))^2);
+k_gy = round((m_gy/n_gy)*log(2));
+
+for i = 1:length(genres_years)
+    genre_year_bloom = bloomFilterInsert(genre_year_bloom, convertStringsToChars(genres_years(i)), k_gy);
+end
+\end{lstlisting}
+
+\subsubsection{Pesquisa}
+Em primeiro lugar, é obtido o género e o ano através da função \verb|strsplit|, que separa o input recebido.
+
+Caso algum destes não se encontre no formato pedido, ou caso o género não exista, a opção termina com uma mensagem de erro.
+
+\begin{lstlisting}[style=Matlab-editor]
+a = input("Select a genre and a year (separated by ','): ", "s");
+a = strsplit(a, ',');
+
+genre = a{1};
+if ~ismember(genre, genres)
+    fprintf("Genre not found!\n")
+    continue
+end
+
+year = a{2};
+if isempty(str2num(year))
+    fprintf("Invalid number!\n")
+    continue
+end
+\end{lstlisting}
+
+Por fim, é aplicada a mesma estratégia da opção 2, utilizando a função \verb|bloomFilterCheck|. No entanto, esta é chamada duas vezes, uma para o género e outra para o par (género, ano), de modo a poder cruzar informações no output.
+
+\begin{lstlisting}[style=Matlab-editor]
+genre_year = convertStringsToChars(strcat(genre, year));
+count_genre = bloomFilterCheck(genre_bloom, genre, k_g);
+count_genre_year = bloomFilterCheck(genre_year_bloom, genre_year, k_gy);
+fprintf("%d movies released in %s with genre %s\n", count_genre_year, year, genre);
+\end{lstlisting}
+
+O output é o seguinte:
+
+\begin{lstlisting}[style=Matlab-editor]
+Select a genre and a year (separated by ','): 
+    Comedy,1995
+
+163 movies released in 1995 with genre Comedy
 \end{lstlisting}
 
 
