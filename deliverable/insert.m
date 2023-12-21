@@ -37,17 +37,31 @@ end
 
 
 %% Genres + Years bloom
-year_bloom = bloomFilterInitialization(1000);
+
+totalElements = x * (y - 2);  % Assuming x is the number of rows and y is the number of columns
+genres_years = strings(1, totalElements);
+count = 1;
 
 for i = 1:x
     for j = 3:y
         if ~ismissing(movies{i, j})
-            key = convertStringsToChars(strcat(movies{i,j}, ",", string(movies{i,2})));
-            year_bloom = bloomFilterInsert(year_bloom, key, 4);
+            genre_year = strcat(movies{i, j}, string(movies{i, 2}));
+            genres_years(count) = genre_year;
+            count = count + 1;
         end
     end
 end
 
+genres_years = genres_years(1:count-1);  % Trim the excess preallocated space
+
+n_gy = length(unique(genres_years));
+m_gy = ceil(-n_gy*log(0.0001)/(log(2))^2);
+k_gy = round((m_gy/n_gy)*log(2));
+year_bloom = bloomFilterInitialization(m_gy);
+
+for i = 1:length(genres_years)
+    year_bloom = bloomFilterInsert(year_bloom, convertStringsToChars(genres_years(i)), k_gy);
+end
 
 %% Signatures
 [Set_genre, ~] = createMovieGenreStructure(movies);
@@ -109,16 +123,12 @@ function [Set, Nm] = createMovieTitleStructure(movies)
 Nm = length(movies);
 Set = cell(Nm,1);
 
-    for n = 1:Nm % Lines (movies)
-        title = movies{n, 1};
-        letters = strings(1, length(title));
-
-        for i = 1:length(title)
-            letters(i) = title(i);
-        end
-
-        Set{n} = strjoin(letters, "");
+for n = 1:Nm % Lines (movies)
+    title = movies{n,1};
+    for i = 1:length(title)-1
+        Set{n} = [Set{n} convertCharsToStrings(title(i:i+1))];
     end
+end
 end
 
 
@@ -135,27 +145,27 @@ for n = 1:Nm
 end
 end
 
-function SimilarTitles = createMovieSimilarities(Set_title, Nm, signatures_title)
-    J = zeros(Nm);
-    k = 100;
-    for n1= 1:Nm
-        for n2= n1+1:Nm
-            J(n1, n2) = sum(signatures_title(n1,:) ~= signatures_title(n2,:))/k;
-        end
-    end
-    
-    
-    % Array para guardar títulos similares (título1, título2, similaridade)
-    SimilarTitles= zeros(1,3);
-    k= 1;
-    for n1= 1:Nm
-        for n2= n1+1:Nm
-            SimilarTitles(k,:) = [Set_title(1) Set_title(2) 1-J(n1,n2)];
-            k= k+1;
-        end
-    end
-
-    if ~all(SimilarTitles(:) == 0)
-        SimilarTitles = sortrows(SimilarTitles, 3);
-    end
-end
+%function SimilarTitles = createMovieSimilarities(Set_title, Nm, signatures_title)
+%    J = zeros(Nm);
+%    k = 100;
+%    for n1= 1:Nm
+%        for n2= n1+1:Nm
+%            J(n1, n2) = sum(signatures_title(n1,:) ~= signatures_title(n2,:))/k;
+%        end
+%    end
+%    
+%    
+%    % Array para guardar títulos similares (título1, título2, similaridade)
+%    SimilarTitles= zeros(1,3);
+%    k= 1;
+%    for n1= 1:Nm
+%        for n2= n1+1:Nm
+%            SimilarTitles(k,:) = [Set_title(1) Set_title(2) 1-J(n1,n2)];
+%            k= k+1;
+%        end
+%    end
+%
+%    if ~all(SimilarTitles(:) == 0)
+%        SimilarTitles = sortrows(SimilarTitles, 3);
+%    end
+%end
