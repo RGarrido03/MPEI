@@ -197,4 +197,88 @@ Top 5 Similar Titles:
   Lovelife - 0.520000
 \end{lstlisting}
 
+\subsection{Opção 5}
+\subsubsection{Estrutura de dados}
+A estrutura de dados é semelhante à encontrada para a opção 4 (ver secção \ref{4_signatures}). No entanto, ao invés de criar \textit{shingles}, o set inclui os conjuntos de géneros para cada filme.
+
+\begin{lstlisting}[style=Matlab-editor]
+[Set_genre, Nm] = createMovieGenreStructure(movies);
+
+function [Set, Nm] = createMovieGenreStructure(movies)
+% For each movie, get its genres
+Nm = length(movies);
+Set = cell(Nm,1);
+
+for n = 1:Nm % Lines (movies)
+    for g = 3:12 % Columns (genres)
+        if ~ismissing(movies{n, g})
+            Set{n} = [Set{n} convertCharsToStrings(movies{n,g})];
+        end
+    end
+end
+end
+\end{lstlisting}
+
+\subsubsection{Assinaturas}
+O conjunto de assinaturas para esta opção foi obtido da mesma forma que a opção 4, utilizando a \textit{hash function} (ver secção \ref{4_signatures}).
+
+\begin{lstlisting}[style=Matlab-editor]
+signatures_genre = getSignatures(Set_genre, Nm, 100);
+\end{lstlisting}
+
+\subsubsection{Pesquisa}
+É pedida uma string de géneros no formato CSV pelo input do MATLAB, ao que é efetuado um split por vírgula, de modo a obter os diversos géneros que nesta se encontram.
+
+\begin{lstlisting}[style=Matlab-editor]
+a = input("Select one or more genres (separated by ','): ", "s");
+a = strsplit(a, ',');
+\end{lstlisting}
+
+De seguida, é criada uma matriz de assinaturas para os vários géneros, tal como na opção 4.
+\begin{lstlisting}[style=Matlab-editor]
+Set = strings(length(a),1);
+for i= 1:length(a)
+    Set(i,1) = convertCharsToStrings(a(i));
+end
+b = cell(1,1);
+b{1} = Set;
+k = 100;
+signatures = getSignatures(b, length(b), k);
+\end{lstlisting}
+
+É efetuada uma comparação de assinaturas para obter a similaridade de Jaccard, seguido de uma ordenação e limite de output.
+\begin{lstlisting}[style=Matlab-editor]
+size_genre = size(signatures_genre, 1);
+similarities = zeros(1, size_genre);
+
+for n = 1:size_genre
+    similarities(n) = 1 - (sum(signatures ~= signatures_genre(n, :)) / k);
+end
+
+[sortedSimilarities, indices] = sort(similarities, 'descend');
+topSimilarities = sortedSimilarities(1:5);
+topTitles = movies(indices(1:5), 1);
+\end{lstlisting}
+
+Por fim, é realizado um print dos vetores, que contêm os demais títulos e similaridades.
+\begin{lstlisting}[style=Matlab-editor]
+fprintf("Top 5 Similar Titles:\n");
+for i = 1:5
+    fprintf("\t%s - %f\n", topTitles{i}, topSimilarities(i));
+end
+\end{lstlisting}
+
+O output é, como esperado:
+\begin{lstlisting}[style=Matlab-editor]
+Select one or more genres (separated by ','): 
+  Comedy,Action,IMAX
+
+Top 5 Similar Titles:
+  Night at the Museum: Battle of the Smithsonian - 1.000000
+  Men in Black III (M.III.B.) (M.I.B.) - 0.770000
+  I Love Trouble - 0.750000
+  Naked Gun 33 1/3: The Final Insult - 0.750000
+  Low Down Dirty Shame, A - 0.750000
+\end{lstlisting}
+
 \end{document}
