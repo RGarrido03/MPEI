@@ -80,6 +80,17 @@ while true
         case 5
             a = input("Select one or more genres (separated by ','): ", "s");
             a = strsplit(a, ',');
+            arevalid = true;
+            for i = 1:length(a)
+                if ~ismember(a{i}, genres)
+                    fprintf("Genre %s is invalid!\n", a{i});
+                    arevalid = false;
+                    break
+                end
+            end
+            if ~arevalid
+                continue
+            end
             Set = strings(length(a),1);
             for i= 1:length(a)
                 Set(i,1) = convertCharsToStrings(a(i));
@@ -95,14 +106,18 @@ while true
                 similarities(n) = 1 - (sum(signatures ~= signatures_genre(n, :)) / k);
             end
             
-            [sortedSimilarities, indices] = sort(similarities, 'descend');
-            topSimilarities = sortedSimilarities(1:5);
+
+            years = cell2mat(movies(indices, 2));
+            combinedData = [similarities; years'];
+            [sortedData, indices] = sortrows(combinedData', [-1, -2]);
+            topSimilarities = sortedData(1:5, 1);
+            topYears = sortedData(1:5, 2);
             topTitles = movies(indices(1:5), 1);
+            
             fprintf("Top 5 Similar Titles:\n");
             for i = 1:5
-                fprintf("\t%s - %f\n", topTitles{i}, topSimilarities(i));
+                fprintf("\t%s - %f - Year: %d\n", topTitles{i}, topSimilarities(i), topYears(i));
             end
-            
 
         case 6
             break;
