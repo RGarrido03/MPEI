@@ -1,3 +1,6 @@
+clear
+load("data.mat")
+
 while true
     fprintf("\n1 - Display available genres\n" + ...
         "2 - Number of movies of a genre\n" + ...
@@ -15,35 +18,34 @@ while true
             end
         
         case 2
-            genre = convertStringsToChars(input("Select a genre: ", 's'));
-            count = bloomFilterCheck(genre_bloom, genre, k);
-            if count == 0
-                fprintf("Genre not found!")
+            genre = convertStringsToChars(input("Select a genre: ", "s"));
+            if ~ismember(genre, genres)
+                fprintf("Genre not found!\n")
             else
+                count = bloomFilterCheck(genre_bloom, genre, k_g);
                 fprintf("%d movies with genre %s\n", count, genre);
             end
         
         case 3
-            a = input("Select a genre and a year (separated by ','): ", 's');
+            a = input("Select a genre and a year (separated by ','): ", "s");
             a = strsplit(a, ',');
 
             genre = a{1};
-            count_genre = bloomFilterCheck(genre_bloom, genre, k);
-            if count_genre == 0
+            if ~ismember(genre, genres)
                 fprintf("Genre not found!\n")
-                break
+                continue
             end
 
             year = a{2};
             if isempty(str2num(year))
                 fprintf("Invalid number!\n")
-                break
+                continue
             end
 
-            key = convertStringsToChars(strcat(genre, year));
-
-            count_year = bloomFilterCheck(year_bloom, key, k_gy);
-            fprintf("%d movies released in %s with genre %s\n", count_year, year, genre);
+            genre_year = convertStringsToChars(strcat(genre, year));
+            count_genre = bloomFilterCheck(genre_bloom, genre, k_g);
+            count_genre_year = bloomFilterCheck(genre_year_bloom, genre_year, k_gy);
+            fprintf("%d movies released in %s with genre %s\n", count_genre_year, year, genre);
 
         case 4
             a = input("Insert a string: ", "s");
@@ -52,11 +54,10 @@ while true
                 Set{1} = [Set{1} convertCharsToStrings(a(i:i+1))];
             end
 
-            k = 100;
+            k = size(signatures_title, 2);
             signatures = getSignatures(Set, 1, k);
             size_titles = size(signatures_title, 1);
             similarities = zeros(1, size_titles);
-            
 
             for n = 1:size_titles
                 similarities(n) = 1 - (sum(signatures ~= signatures_title(n, :)) / k);
@@ -64,15 +65,16 @@ while true
             
             [sortedSimilarities, indices] = sort(similarities, 'descend');
             topSimilarities = sortedSimilarities(1:5);
-            topTitles = Set_title(indices(1:5));
+            topTitles = movies(indices(1:5));
+            topGenres = Set_genre(indices(1:5));
             fprintf("Top 5 Similar Titles:\n");
-            concatenatedTitle = strings(length(topTitles{i}) + 1);
             for i = 1:5
-                for j= 1:length(topTitles{i})
-                    concatenatedTitle(i) = strcat(concatenatedTitle(i), topTitles{i}{j}(1));
+                displayString = sprintf("\t%s - %f - Genres: ", topTitles{i}, topSimilarities(i));
+                for j = 1:length(topGenres{i})
+                    displayString = strcat(displayString, convertCharsToStrings(topGenres{i}{j}), ", ");
                 end
-                concatenatedTitle(i) = strcat(concatenatedTitle(i), topTitles{i}{j}(2));
-                fprintf("\t%s - %f\n", concatenatedTitle(i), topSimilarities(i));
+                
+                fprintf('%s\n', displayString);
             end
 
         case 5
@@ -84,16 +86,14 @@ while true
             end
             b = cell(1,1);
             b{1} = Set;
-            k = 100;
+            k = size(signatures_genre, 2);
             signatures = getSignatures(b, length(b), k);
             size_genre = size(signatures_genre, 1);
             similarities = zeros(1, size_genre);
 
-
             for n = 1:size_genre
                 similarities(n) = 1 - (sum(signatures ~= signatures_genre(n, :)) / k);
             end
-
             
             [sortedSimilarities, indices] = sort(similarities, 'descend');
             topSimilarities = sortedSimilarities(1:5);

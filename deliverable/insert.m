@@ -7,13 +7,14 @@ movies = readcell('movies.csv', 'Delimiter', ',');
 
 
 %% Get genres
-genres = {};
+genres = strings([]);
 [x, y] = size(movies);
 
 for i = 1:x
     for j = 3:y
         if ~ismissing(movies{i, j})
-            if ~ismember(convertCharsToStrings(movies{i, j}), genres)
+            g = movies{i,j};
+            if ~strcmp(g, '(no genres listed)') && ~ismember(convertCharsToStrings(movies{i, j}), genres)
                 genres = [genres convertCharsToStrings(movies{i, j})];
             end
         end
@@ -24,13 +25,13 @@ end
 %% Genres bloom
 n = length(genres);
 m = ceil(-n*log(0.001)/(log(2))^2);
-k = round((m/n)*log(2));
+k_g = round((m/n)*log(2));
 genre_bloom = bloomFilterInitialization(m);
 
 for i = 1:x
     for j = 3:y
         if ~ismissing(movies{i, j})
-            genre_bloom = bloomFilterInsert(genre_bloom, movies{i, j}, k);
+            genre_bloom = bloomFilterInsert(genre_bloom, movies{i, j}, k_g);
         end
     end
 end
@@ -38,7 +39,7 @@ end
 
 %% Genres + Years bloom
 
-totalElements = x * (y - 2);  % Assuming x is the number of rows and y is the number of columns
+totalElements = x * (y - 2);
 genres_years = strings(1, totalElements);
 count = 1;
 
@@ -52,15 +53,15 @@ for i = 1:x
     end
 end
 
-genres_years = genres_years(1:count-1);  % Trim the excess preallocated space
+genres_years = genres_years(1:count-1);
 
 n_gy = length(unique(genres_years));
 m_gy = ceil(-n_gy*log(0.0001)/(log(2))^2);
 k_gy = round((m_gy/n_gy)*log(2));
-year_bloom = bloomFilterInitialization(m_gy);
+genre_year_bloom = bloomFilterInitialization(m_gy);
 
 for i = 1:length(genres_years)
-    year_bloom = bloomFilterInsert(year_bloom, convertStringsToChars(genres_years(i)), k_gy);
+    genre_year_bloom = bloomFilterInsert(genre_year_bloom, convertStringsToChars(genres_years(i)), k_gy);
 end
 
 %% Signatures
@@ -69,6 +70,9 @@ end
 signatures_genre = getSignatures(Set_genre, Nm, 100);
 signatures_title = getSignatures(Set_title, Nm, 100);
 
+%% Save variables to file
+
+save("data.mat", "Set_genre", "Set_title", "genre_bloom", "genres", "genres_years", "k_g", "k_gy", "genre_year_bloom", "signatures_genre", "signatures_title", "movies");
 
 %% Hash function
 function aux = muxDJB31MA(chave, seed, k)
