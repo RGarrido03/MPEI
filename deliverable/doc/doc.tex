@@ -78,13 +78,14 @@ end
 Filtrámos, através de um ciclo \verb|for|, os demais géneros, de modo a obter um vetor de géneros únicos, ignorando os elementos do \textit{cell array} que estão \textit{missing}.
 
 \begin{lstlisting}[style=Matlab-editor]
-genres = {};
+genres = strings([]);
 [x, y] = size(movies);
 
 for i = 1:x
     for j = 3:y
         if ~ismissing(movies{i, j})
-            if ~ismember(convertCharsToStrings(movies{i, j}), genres)
+            g = movies{i,j};
+            if ~strcmp(g, '(no genres listed)') && ~ismember(convertCharsToStrings(movies{i, j}), genres)
                 genres = [genres convertCharsToStrings(movies{i, j})];
             end
         end
@@ -113,10 +114,14 @@ Para inserir elementos, utilizamos a função \verb|bloomFilterInsert|, onde se 
 Utilizámos esta função para inserir todos os géneros que se encontram no cell array criado pelo ficheiro CSV, ignorando os valores \textit{missing}.
 
 \begin{lstlisting}[style=Matlab-editor]
-  for i = 1:x
+n = length(genres);
+m = ceil(-n*log(0.001)/(log(2))^2);
+k_g = round((m/n)*log(2));
+
+for i = 1:x
     for j = 3:y
         if ~ismissing(movies{i, j})
-            genre_bloom = bloomFilterInsert(genre_bloom, movies{i, j}, k);
+            genre_bloom = bloomFilterInsert(genre_bloom, movies{i, j}, k_g);
         end
     end
 end
@@ -139,11 +144,11 @@ Esta possui a mesma lógica da função \verb|bloomFilterInsert| (ver secção \
 Caso o valor obtido seja 0, significa que o género não existe.
 
 \begin{lstlisting}[style=Matlab-editor]
-genre = convertStringsToChars(input("Select a genre: ", 's'));
-count = bloomFilterCheck(genre_bloom, genre, k);
-if count == 0
-    fprintf("Genre not found!")
+genre = convertStringsToChars(input("Select a genre: ", "s"));
+if ~ismember(genre, genres)
+    fprintf("Genre not found!\n")
 else
+    count = bloomFilterCheck(genre_bloom, genre, k);
     fprintf("%d movies with genre %s\n", count, genre);
 end
 
@@ -229,7 +234,7 @@ for i = 1:length(a)-1
     Set{1} = [Set{1} convertCharsToStrings(a(i:i+1))];
 end
 
-k = 100;
+k = size(signatures_title, 2);
 signatures = getSignatures(Set, 1, k);
 \end{lstlisting}
 
@@ -249,7 +254,8 @@ Após obter o vetor de similaridades, é efetuada neste uma ordenação decresce
 \begin{lstlisting}[style=Matlab-editor]
 [sortedSimilarities, indices] = sort(similarities, 'descend');
 topSimilarities = sortedSimilarities(1:5);
-topTitles = Set_title(indices(1:5));
+topTitles = movies(indices(1:5));
+topGenres = Set_genre(indices(1:5));
 \end{lstlisting}
 
 Por fim, e uma vez que temos um conjunto de shingles, efetuamos uma concatenação entre estes de modo a obter o título completo.
@@ -258,11 +264,12 @@ Por fim, e uma vez que temos um conjunto de shingles, efetuamos uma concatenaç�
 fprintf("Top 5 Similar Titles:\n");
 concatenatedTitle = strings(length(topTitles{i}) + 1);
 for i = 1:5
-    for j= 1:length(topTitles{i})
-        concatenatedTitle(i) = strcat(concatenatedTitle(i), topTitles{i}{j}(1));
+    displayString = sprintf("\t%s - %f - Genres: ", topTitles{i}, topSimilarities(i));
+    for j = 1:length(topGenres{i})
+        displayString = strcat(displayString, convertCharsToStrings(topGenres{i}{j}), ", ");
     end
-    concatenatedTitle(i) = strcat(concatenatedTitle(i), topTitles{i}{j}(2));
-    fprintf("\t%s - %f\n", concatenatedTitle(i), topSimilarities(i));
+
+    fprintf('%s\n', displayString);
 end
 \end{lstlisting}
 
@@ -324,7 +331,7 @@ for i= 1:length(a)
 end
 b = cell(1,1);
 b{1} = Set;
-k = 100;
+k = size(signatures_genre, 2);
 signatures = getSignatures(b, length(b), k);
 \end{lstlisting}
 
