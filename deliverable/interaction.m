@@ -71,7 +71,7 @@ while true
             for i = 1:5
                 displayString = sprintf("\t%s - %f - Genres: ", topTitles{i}, topSimilarities(i));
                 for j = 1:length(topGenres{i})
-                    displayString = strcat(displayString, convertCharsToStrings(topGenres{i}{j}), ", ");
+                    displayString = strcat(displayString, convertCharsToStrings(topGenres{i}{j}), " ");
                 end
                 
                 fprintf('%s\n', displayString);
