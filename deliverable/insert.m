@@ -68,7 +68,6 @@ end
 [Set_title, Nm] = createMovieTitleStructure(movies);
 signatures_genre = getSignatures(Set_genre, Nm, 100);
 signatures_title = getSignatures(Set_title, Nm, 100);
-%%similarTitles = createMovieSimilarities(Set_title, Nm, signatures_title);
 
 
 %% Hash function
@@ -89,16 +88,16 @@ end
 
 %% Bloom functions
 function bloom = bloomFilterInitialization(n)
-    bloom = zeros(1, n, 'uint16');
+bloom = zeros(1, n, 'uint16');
 end
 
 function bloom = bloomFilterInsert(bloom, key, k)
-    m = length(bloom);
-    aux = muxDJB31MA(key, 127, k);
-    for i = 1:k
-        hash = mod(aux(i), m) + 1;
-        bloom(hash) = bloom(hash) + 1;
-    end
+m = length(bloom);
+aux = muxDJB31MA(key, 127, k);
+for i = 1:k
+    hash = mod(aux(i), m) + 1;
+    bloom(hash) = bloom(hash) + 1;
+end
 end
 
 
