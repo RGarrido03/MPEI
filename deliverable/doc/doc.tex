@@ -92,6 +92,88 @@ for i = 1:x
 end
 \end{lstlisting}
 
+\subsection{Opção 2}
+\subsubsection{Criação do filtro de Bloom}
+Para inicializar um filtro de bloom, recorre-se a um vetor com o tamanho passo como argumento da função \verb|bloomFilterInitialization|.
+
+Recorremos à formula \(\frac{-n\times log(n)}{log(2)^2}\) para obter o tamanho adequado do filtro, onde \(n\) é a probabilidade de falsos positivos desejada. Escolhemos \(n\) como \(0.001\) porque consideramos ser um equilibro entre uma percentagem baixa de erro e o consumo de memória do filtro.
+
+\begin{lstlisting}[style=Matlab-editor]
+m = ceil(-n*log(0.001)/(log(2))^2);
+genre_bloom = bloomFilterInitialization(m);
+
+function bloom = bloomFilterInitialization(n)
+bloom = zeros(1, n, 'uint16');
+end
+\end{lstlisting}
+
+\subsubsection{Inserção de elementos} \label{2_insert}
+Para inserir elementos, utilizamos a função \verb|bloomFilterInsert|, onde se obtém o conjunto de \textit{hashes} com base na \textit{key} inserida, e, ao valor, se calcula o resto da divisão pelo tamanho do filtro de Bloom. Uma vez que este filtro envolve contagem, é feita a soma de 1 ao invés de definir como \textit{true}.
+
+Utilizámos esta função para inserir todos os géneros que se encontram no cell array criado pelo ficheiro CSV, ignorando os valores \textit{missing}.
+
+\begin{lstlisting}[style=Matlab-editor]
+  for i = 1:x
+    for j = 3:y
+        if ~ismissing(movies{i, j})
+            genre_bloom = bloomFilterInsert(genre_bloom, movies{i, j}, k);
+        end
+    end
+end
+
+function bloom = bloomFilterInsert(bloom, key, k)
+m = length(bloom);
+aux = muxDJB31MA(key, 127, k);
+for i = 1:k
+    hash = mod(aux(i), m) + 1;
+    bloom(hash) = bloom(hash) + 1;
+end
+end
+\end{lstlisting}
+
+\subsubsection{Pesquisa}
+Ao \textit{char array} obtido através do \textit{input}, é feita uma conversão para \textit{string}, onde depois se invoca a função \verb|bloomFilterCheck|.
+
+Esta possui a mesma lógica da função \verb|bloomFilterInsert| (ver secção \ref{2_insert}), embora guarde os vários valores obtidos pela função de \textit{hash} e retorne o menor.
+
+Caso o valor obtido seja 0, significa que o género não existe.
+
+\begin{lstlisting}[style=Matlab-editor]
+genre = convertStringsToChars(input("Select a genre: ", 's'));
+count = bloomFilterCheck(genre_bloom, genre, k);
+if count == 0
+    fprintf("Genre not found!")
+else
+    fprintf("%d movies with genre %s\n", count, genre);
+end
+
+function count = bloomFilterCheck(bloom, key, k)
+    m = length(bloom);
+    aux = muxDJB31MA(key, 127, k);
+    count = [];
+    for i = 1:k
+        key = [key num2str(i)];
+        hash = mod(aux(i), m) + 1;
+        count = [count bloom(hash)];
+    end
+    
+    if ~isempty(count)
+        count = min(count);
+    else
+        count = 0;
+    end
+end
+\end{lstlisting}
+
+O output desta opção é o seguinte:
+\begin{lstlisting}[style=Matlab-editor]
+Select a genre: 
+  Comedy
+
+16124 movies with genre Comedy
+\end{lstlisting}
+
+
 \subsection{Opção 4}
 \subsubsection{Estrutura de dados} \label{4_structure}
 Para criar as assinaturas necessárias à execução desta opção, é necessário criar uma estrutura de dados adequada, que permita posteriormente efetuar a comparação entre a string introduzida e os vários títulos.
