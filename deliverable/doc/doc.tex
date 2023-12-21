@@ -316,11 +316,23 @@ signatures_genre = getSignatures(Set_genre, Nm, 100);
 \end{lstlisting}
 
 \subsubsection{Pesquisa}
-É pedida uma string de géneros no formato CSV pelo input do MATLAB, ao que é efetuado um split por vírgula, de modo a obter os diversos géneros que nesta se encontram.
+É pedida uma string de géneros no formato CSV pelo input do MATLAB, ao que é efetuado um split por vírgula, de modo a obter os diversos géneros que nesta se encontram. Com isto, é possível verificar se algum dos géneros introduzidos não pertence ao conjunto de géneros existentes na matriz.
 
 \begin{lstlisting}[style=Matlab-editor]
 a = input("Select one or more genres (separated by ','): ", "s");
 a = strsplit(a, ',');
+
+arevalid = true;
+for i = 1:length(a)
+    if ~ismember(a{i}, genres)
+        fprintf("Genre %s is invalid!\n", a{i});
+        arevalid = false;
+        break
+    end
+end
+if ~arevalid
+    continue
+end
 \end{lstlisting}
 
 De seguida, é criada uma matriz de assinaturas para os vários géneros, tal como na opção 4.
