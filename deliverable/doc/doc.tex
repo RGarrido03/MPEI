@@ -92,6 +92,29 @@ for i = 1:x
 end
 \end{lstlisting}
 
+\subsection{Opção 4}
+\subsubsection{Estrutura de dados}
+Para criar as assinaturas necessárias à execução desta opção, é necessário criar uma estrutura de dados adequada, que permita posteriormente efetuar a comparação entre a string introduzida e os vários títulos.
+
+Assim, para cada filme, são criados shingles a partir do título. Estes têm comprimento 2, uma vez que é o número que permite obter uma maior fiabilidade nos resultados, pelo facto de existir uma maior granularidade.
+
+\begin{lstlisting}[style=Matlab-editor]
+[Set_title, Nm] = createMovieTitleStructure(movies);
+
+function [Set, Nm] = createMovieTitleStructure(movies)
+% For each movie, get its title split in shingles.
+Nm = length(movies);
+Set = cell(Nm,1);
+
+for n = 1:Nm % Lines (movies)
+    title = movies{n,1};
+    for i = 1:length(title)-1
+        Set{n} = [Set{n} convertCharsToStrings(title(i:i+1))];
+    end
+end
+end
+\end{lstlisting}
+
 \begin{lstlisting}[style=Matlab-editor]
 %% Sample Matlab code
 !mv test.txt test2.txt
